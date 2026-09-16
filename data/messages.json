@@ -1,0 +1,38 @@
+[
+  {
+    "id": "msg_mu3zqsis_36nc1",
+    "name": "Alex Rivera",
+    "email": "alex.rivera@example.com",
+    "subject": "Distributed Systems Architecture",
+    "message": "Excited to discuss your microservices and high-throughput data pipelines.",
+    "createdAt": "2026-09-16T11:01:55.300Z",
+    "source": "form"
+  },
+  {
+    "id": "msg_mu3yub63_9duea",
+    "name": "Hiring Manager",
+    "email": "manager@scaleup.io",
+    "subject": "Senior Fullstack Opportunity",
+    "message": "We are very impressed by your background in NestJS, Golang, and high scale booking systems.",
+    "createdAt": "2026-09-16T10:36:39.819Z",
+    "source": "terminal"
+  },
+  {
+    "id": "msg-init-001",
+    "name": "Engineering Lead",
+    "email": "recruiter@techventures.io",
+    "subject": "Distributed Systems & Cloud Architect Role",
+    "message": "Hi Imrul, great experience with high-concurrency booking engines and Terraform. We are scaling our microservices platform and would love to connect!",
+    "createdAt": "2026-09-14T10:36:33.307Z",
+    "source": "terminal"
+  },
+  {
+    "id": "msg-init-002",
+    "name": "Alex Rivera",
+    "email": "alex@cloudpipeline.dev",
+    "subject": "AirByte and BigQuery ETL Pipeline inquiry",
+    "message": "Loved your work on the Spotify to Monstercat Airbyte data pipeline. Are you available for advisory or contract consulting?",
+    "createdAt": "2026-09-15T22:36:33.307Z",
+    "source": "form"
+  }
+]
