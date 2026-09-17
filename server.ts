@@ -1,12 +1,8 @@
 import express from "express";
-import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
 import { MongoClient, ObjectId } from "mongodb";
+import path from "path";
 import { createServer as createViteServer } from "vite";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -38,23 +34,29 @@ const initialSeedMessages: StoredMessage[] = [
     name: "Engineering Lead",
     email: "recruiter@techventures.io",
     subject: "Distributed Systems & Cloud Architect Role",
-    message: "Hi Imrul, great experience with high-concurrency booking engines and Terraform. We are scaling our microservices platform and would love to connect!",
+    message:
+      "Hi Imrul, great experience with high-concurrency booking engines and Terraform. We are scaling our microservices platform and would love to connect!",
     createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    source: "terminal"
+    source: "terminal",
   },
   {
     id: "msg-init-002",
     name: "Alex Rivera",
     email: "alex@cloudpipeline.dev",
     subject: "AirByte and BigQuery ETL Pipeline inquiry",
-    message: "Loved your work on the Spotify to Monstercat Airbyte data pipeline. Are you available for advisory or contract consulting?",
+    message:
+      "Loved your work on the Spotify to Monstercat Airbyte data pipeline. Are you available for advisory or contract consulting?",
     createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    source: "form"
-  }
+    source: "form",
+  },
 ];
 
 if (!fs.existsSync(MESSAGES_FILE)) {
-  fs.writeFileSync(MESSAGES_FILE, JSON.stringify(initialSeedMessages, null, 2), "utf-8");
+  fs.writeFileSync(
+    MESSAGES_FILE,
+    JSON.stringify(initialSeedMessages, null, 2),
+    "utf-8",
+  );
 }
 
 function getLocalMessages(): StoredMessage[] {
@@ -84,16 +86,24 @@ let mongoDbConnected = false;
 let mongoConnectionNotice: string | null = null;
 let isConnecting = false;
 
-async function connectToMongo(): Promise<{ success: boolean; message: string; notice?: string }> {
+async function connectToMongo(): Promise<{
+  success: boolean;
+  message: string;
+  notice?: string;
+}> {
   const uri = process.env.MONGODB_URI;
   if (!uri || uri.trim() === "") {
     mongoDbConnected = false;
-    mongoConnectionNotice = "No MONGODB_URI environment variable configured; operating in persistent embedded document storage mode.";
+    mongoConnectionNotice =
+      "No MONGODB_URI environment variable configured; operating in persistent embedded document storage mode.";
     return { success: false, message: mongoConnectionNotice };
   }
 
   if (isConnecting) {
-    return { success: false, message: "Connection attempt already in progress." };
+    return {
+      success: false,
+      message: "Connection attempt already in progress.",
+    };
   }
 
   isConnecting = true;
@@ -114,8 +124,13 @@ async function connectToMongo(): Promise<{ success: boolean; message: string; no
     await mongoClient.db("admin").command({ ping: 1 });
     mongoDbConnected = true;
     mongoConnectionNotice = null;
-    console.log("[MongoDB] Remote MongoDB Atlas cluster connected successfully.");
-    return { success: true, message: "Connected to remote MongoDB Atlas cluster." };
+    console.log(
+      "[MongoDB] Remote MongoDB Atlas cluster connected successfully.",
+    );
+    return {
+      success: true,
+      message: "Connected to remote MongoDB Atlas cluster.",
+    };
   } catch (err: any) {
     mongoDbConnected = false;
     if (mongoClient) {
@@ -133,17 +148,22 @@ async function connectToMongo(): Promise<{ success: boolean; message: string; no
       err?.name === "MongoServerSelectionError";
 
     if (isSslOrIpBlocked) {
-      mongoConnectionNotice = "MongoDB Atlas Network Access: Current Cloud Run IP is not in Atlas IP Access List. In MongoDB Atlas, navigate to 'Network Access' -> 'Add IP Address' -> select 'Allow Access from Anywhere' (0.0.0.0/0). Defaulting seamlessly to persistent embedded document storage.";
-      console.log("[MongoDB] Remote Atlas requires 0.0.0.0/0 Network Access. Operating seamlessly in persistent embedded storage mode.");
+      mongoConnectionNotice =
+        "MongoDB Atlas Network Access: Current Cloud Run IP is not in Atlas IP Access List. In MongoDB Atlas, navigate to 'Network Access' -> 'Add IP Address' -> select 'Allow Access from Anywhere' (0.0.0.0/0). Defaulting seamlessly to persistent embedded document storage.";
+      console.log(
+        "[MongoDB] Remote Atlas requires 0.0.0.0/0 Network Access. Operating seamlessly in persistent embedded storage mode.",
+      );
     } else {
       mongoConnectionNotice = `Remote connection deferred (${errMsg}). Operating in persistent embedded storage mode.`;
-      console.log(`[MongoDB] Remote connection deferred: ${errMsg}. Using persistent embedded storage.`);
+      console.log(
+        `[MongoDB] Remote connection deferred: ${errMsg}. Using persistent embedded storage.`,
+      );
     }
 
     return {
       success: false,
       message: "Operating in persistent embedded document storage mode.",
-      notice: mongoConnectionNotice
+      notice: mongoConnectionNotice,
     };
   } finally {
     isConnecting = false;
@@ -173,7 +193,9 @@ app.get("/api/health", async (req, res) => {
     status: "online",
     database: mongoDbConnected ? "mongodb" : "embedded_mongo",
     databaseStatus: mongoDbConnected ? "connected" : "persistent_file_store",
-    remoteUriConfigured: Boolean(process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== ""),
+    remoteUriConfigured: Boolean(
+      process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== "",
+    ),
     mongoConnectionNotice,
     golangMicroservice: {
       status: "ready",
@@ -182,7 +204,7 @@ app.get("/api/health", async (req, res) => {
     },
     uptimeSeconds: Math.floor(process.uptime()),
     messageCount,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -194,7 +216,7 @@ app.post("/api/mongo/retry", async (req, res) => {
     database: mongoDbConnected ? "mongodb" : "embedded_mongo",
     message: result.message,
     notice: mongoConnectionNotice,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -204,9 +226,11 @@ app.get("/api/mongo/status", (req, res) => {
     connected: mongoDbConnected,
     database: mongoDbConnected ? "mongodb" : "embedded_mongo",
     databaseStatus: mongoDbConnected ? "connected" : "persistent_file_store",
-    remoteUriConfigured: Boolean(process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== ""),
+    remoteUriConfigured: Boolean(
+      process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== "",
+    ),
     notice: mongoConnectionNotice,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -215,15 +239,24 @@ app.get("/api/messages", async (req, res) => {
   if (mongoDbConnected && mongoClient) {
     try {
       const db = mongoClient.db("portfolio_db");
-      const docs = await db.collection("messages").find({}).sort({ createdAt: -1 }).limit(50).toArray();
-      const formatted = docs.map(d => ({
+      const docs = await db
+        .collection("messages")
+        .find({})
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
+      const formatted = docs.map((d) => ({
         id: d._id.toString(),
         name: d.name,
         email: d.email,
         subject: d.subject || "",
         message: d.message,
-        createdAt: d.createdAt ? (typeof d.createdAt === 'string' ? d.createdAt : d.createdAt.toISOString()) : new Date().toISOString(),
-        source: d.source || "web"
+        createdAt: d.createdAt
+          ? typeof d.createdAt === "string"
+            ? d.createdAt
+            : d.createdAt.toISOString()
+          : new Date().toISOString(),
+        source: d.source || "web",
       }));
       return res.json({ messages: formatted, source: "mongodb" });
     } catch (err) {
@@ -241,26 +274,36 @@ app.post("/api/messages", async (req, res) => {
     const { name, email, subject, message, source } = req.body;
 
     if (!name || typeof name !== "string" || name.trim().length < 2) {
-      return res.status(400).json({ error: "Please enter a valid name (minimum 2 characters)." });
+      return res
+        .status(400)
+        .json({ error: "Please enter a valid name (minimum 2 characters)." });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email.trim())) {
-      return res.status(400).json({ error: "Please enter a valid email address." });
+      return res
+        .status(400)
+        .json({ error: "Please enter a valid email address." });
     }
 
     if (!message || typeof message !== "string" || message.trim().length < 5) {
-      return res.status(400).json({ error: "Message must be at least 5 characters long." });
+      return res
+        .status(400)
+        .json({ error: "Message must be at least 5 characters long." });
     }
 
     const cleanMessage: StoredMessage = {
-      id: "msg_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 7),
+      id:
+        "msg_" +
+        Date.now().toString(36) +
+        "_" +
+        Math.random().toString(36).substring(2, 7),
       name: name.trim(),
       email: email.trim(),
       subject: subject ? subject.trim() : "General Inquiry",
       message: message.trim(),
       createdAt: new Date().toISOString(),
-      source: source === "terminal" ? "terminal" : "form"
+      source: source === "terminal" ? "terminal" : "form",
     };
 
     let savedToMongo = false;
@@ -273,7 +316,7 @@ app.post("/api/messages", async (req, res) => {
           subject: cleanMessage.subject,
           message: cleanMessage.message,
           source: cleanMessage.source,
-          createdAt: new Date(cleanMessage.createdAt)
+          createdAt: new Date(cleanMessage.createdAt),
         });
         cleanMessage.id = insertRes.insertedId.toString();
         savedToMongo = true;
@@ -287,17 +330,23 @@ app.post("/api/messages", async (req, res) => {
     local.unshift(cleanMessage);
     saveLocalMessages(local);
 
-    console.log(`[Message Saved] From: ${cleanMessage.name} <${cleanMessage.email}> (${cleanMessage.source})`);
+    console.log(
+      `[Message Saved] From: ${cleanMessage.name} <${cleanMessage.email}> (${cleanMessage.source})`,
+    );
 
     return res.status(201).json({
       success: true,
       message: "Message successfully recorded in database",
-      database: savedToMongo ? "MongoDB Database" : "Persistent Mongo Document Store",
-      data: cleanMessage
+      database: savedToMongo
+        ? "MongoDB Database"
+        : "Persistent Mongo Document Store",
+      data: cleanMessage,
     });
   } catch (err: any) {
     console.error("Message submission error:", err);
-    return res.status(500).json({ error: "Internal server error saving message." });
+    return res
+      .status(500)
+      .json({ error: "Internal server error saving message." });
   }
 });
 
@@ -316,7 +365,7 @@ app.delete("/api/messages/:id", async (req, res) => {
   }
 
   const local = getLocalMessages();
-  const filtered = local.filter(m => m.id !== id);
+  const filtered = local.filter((m) => m.id !== id);
   saveLocalMessages(filtered);
 
   res.json({ success: true, message: `Message ${id} deleted.` });
